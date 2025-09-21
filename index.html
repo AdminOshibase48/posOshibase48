@@ -3,71 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS System</title>
-    <link rel="stylesheet" href="public/style.css">
+    <title>Sistem POS Modern</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <header>
-        <h1>Sistem Kasir</h1>
-    </header>
+    <div id="app-container">
+        <div id="dashboard-page" class="page">
+            <header>
+                <h1>POS Modern</h1>
+                <nav>
+                    <button id="show-cashier-btn" class="active">Kasir</button>
+                    <button id="show-management-btn">Manajemen Barang</button>
+                    <button id="logout-btn">Keluar</button>
+                </nav>
+            </header>
 
-    <main>
-        <div id="login-page">
-            <h2>Login</h2>
+            <div id="cashier-section" class="section active">
+                <div class="input-section">
+                    <input type="text" id="item-search" placeholder="Cari atau masukkan kode barang...">
+                </div>
+                
+                <div class="pos-main">
+                    <div class="cart-section">
+                        <h3>Keranjang</h3>
+                        <ul id="cart-list"></ul>
+                        <div class="summary">
+                            <span>Total</span>
+                            <span id="total-price">Rp 0</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button id="checkout-btn">Bayar</button>
+                            <button id="reset-cart-btn">Batal</button>
+                        </div>
+                    </div>
+                    <div class="item-list-section">
+                        <h3>Daftar Barang</h3>
+                        <div id="item-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="management-section" class="section hidden">
+                <h2>Manajemen Barang</h2>
+                <button id="add-item-btn" class="primary-btn">Tambah Barang Baru</button>
+                <div class="table-container">
+                    <table id="item-table">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Stok</th>
+                                <th>Harga</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal-overlay active">
+        <div class="modal-content">
+            <h2>Selamat Datang</h2>
             <form id="login-form">
                 <input type="text" id="username" placeholder="Username" required>
                 <input type="password" id="password" placeholder="Password" required>
-                <button type="submit">Login</button>
+                <button type="submit">Masuk</button>
             </form>
             <p id="login-message"></p>
         </div>
+    </div>
 
-        <div id="dashboard-page" class="hidden">
-            <nav>
-                <button id="show-cashier-btn">Kasir</button>
-                <button id="show-management-btn">Manajemen Barang</button>
-                <button id="logout-btn">Logout</button>
-            </nav>
-
-            <div id="cashier-section">
-                <h2>Kasir</h2>
-                <div class="input-section">
-                    <input type="text" id="item-search" placeholder="Cari barang...">
-                    <button id="add-to-cart-btn">Tambah ke Keranjang</button>
-                </div>
-                
-                <h3>Keranjang Belanja</h3>
-                <ul id="cart-list">
-                    </ul>
-                <div class="total-section">
-                    Total: <span id="total-price">Rp 0</span>
-                </div>
-                <div class="action-buttons">
-                    <button id="checkout-btn">Bayar</button>
-                    <button id="reset-cart-btn">Reset Keranjang</button>
-                </div>
-            </div>
-
-            <div id="management-section" class="hidden">
-                <h2>Manajemen Barang</h2>
-                <button id="add-item-btn">Tambah Barang Baru</button>
-                <table id="item-table">
-                    <thead>
-                        <tr>
-                            <th>Nama Barang</th>
-                            <th>Stok</th>
-                            <th>Harga</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <script src="script.js"></script>
 </body>
 </html>
