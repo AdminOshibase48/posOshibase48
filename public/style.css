@@ -7,26 +7,17 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #f5f7fb;
     color: #333;
     line-height: 1.6;
 }
 
-.screen {
-    display: none;
-}
-
-.screen.active {
-    display: block;
-}
-
-/* Login Screen */
-#login-screen {
+/* Login Page */
+body.login-page {
+    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
 }
 
 .login-container {
@@ -122,7 +113,11 @@ body {
     color: #666;
 }
 
-/* Main App Screen */
+/* Dashboard Page */
+body.dashboard-page {
+    background-color: #f5f7fb;
+}
+
 header {
     background: white;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -148,10 +143,15 @@ header {
     font-size: 24px;
     margin-right: 10px;
     margin-bottom: 0;
+    color: #4361ee;
 }
 
 .header-content .logo h1 {
     font-size: 22px;
+}
+
+.header-content .logo h1 span {
+    color: #4361ee;
 }
 
 .user-info {
@@ -604,5 +604,13 @@ main {
     
     .cart-actions {
         flex-direction: column;
+    }
+    
+    .login-container {
+        padding: 10px;
+    }
+    
+    .login-card {
+        padding: 20px;
     }
 }
