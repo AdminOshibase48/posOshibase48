@@ -11,6 +11,9 @@ let products = JSON.parse(localStorage.getItem('products')) || [
 // Keranjang belanja
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
+// Data transaksi history
+let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+
 // Elemen DOM
 const productsGrid = document.getElementById('products-grid');
 const searchProductInput = document.getElementById('search-product');
@@ -34,11 +37,17 @@ const checkoutTotalElement = document.getElementById('checkout-total');
 const confirmPaymentBtn = document.getElementById('confirm-payment');
 const toast = document.getElementById('toast');
 const toastMessage = document.getElementById('toast-message');
+const historyBtn = document.getElementById('history-btn');
+const historyModal = document.getElementById('history-modal');
+const historyList = document.getElementById('history-list');
+const historyDateFilter = document.getElementById('history-date');
+const applyFilterBtn = document.getElementById('apply-filter');
 
 // Fungsi untuk menyimpan data ke localStorage
 function saveToLocalStorage() {
     localStorage.setItem('products', JSON.stringify(products));
     localStorage.setItem('cart', JSON.stringify(cart));
+    localStorage.setItem('transactions', JSON.stringify(transactions));
 }
 
 // Format angka ke Rupiah
@@ -60,11 +69,18 @@ function showToast(message) {
     }, 3000);
 }
 
-// Load produk ke grid
+// Load produk ke grid (Realtime)
 function loadProducts() {
     productsGrid.innerHTML = '';
     
-    products.forEach(product => {
+    const searchTerm = searchProductInput.value.toLowerCase();
+    
+    const filteredProducts = products.filter(product => {
+        return product.name.toLowerCase().includes(searchTerm) || 
+               product.code.toLowerCase().includes(searchTerm);
+    });
+    
+    filteredProducts.forEach(product => {
         if (product.stock > 0) {
             const productCard = document.createElement('div');
             productCard.className = 'product-card';
@@ -91,39 +107,7 @@ function loadProducts() {
 }
 
 // Cari produk
-searchProductInput.addEventListener('input', function() {
-    const searchTerm = this.value.toLowerCase();
-    
-    productsGrid.innerHTML = '';
-    
-    products.filter(product => {
-        return product.name.toLowerCase().includes(searchTerm) || 
-               product.code.toLowerCase().includes(searchTerm);
-    }).forEach(product => {
-        if (product.stock > 0) {
-            const productCard = document.createElement('div');
-            productCard.className = 'product-card';
-            productCard.innerHTML = `
-                <h3>${product.name}</h3>
-                <div class="code">${product.code}</div>
-                <div class="price">${formatRupiah(product.price)}</div>
-                <div class="stock">Stok: ${product.stock}</div>
-                <button class="add-to-cart" data-id="${product.id}">
-                    <i class="fas fa-cart-plus"></i> Tambah
-                </button>
-            `;
-            productsGrid.appendChild(productCard);
-        }
-    });
-    
-    // Tambah event listener untuk tombol tambah ke keranjang
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            addToCart(productId);
-        });
-    });
-});
+searchProductInput.addEventListener('input', loadProducts);
 
 // Tambah produk ke keranjang
 function addToCart(productId) {
@@ -295,11 +279,105 @@ manageProductsBtn.addEventListener('click', function() {
     productsModal.style.display = 'block';
 });
 
+// Tombol History
+historyBtn.addEventListener('click', function() {
+    loadHistory();
+    historyModal.style.display = 'block';
+});
+
+// Filter History
+applyFilterBtn.addEventListener('click', loadHistory);
+
+// Load History Transaksi
+function loadHistory() {
+    historyList.innerHTML = '';
+    
+    let filteredTransactions = transactions;
+    
+    // Filter berdasarkan tanggal jika ada
+    if (historyDateFilter.value) {
+        filteredTransactions = transactions.filter(transaction => {
+            const transactionDate = new Date(transaction.timestamp).toLocaleDateString('id-ID');
+            const filterDate = new Date(historyDateFilter.value).toLocaleDateString('id-ID');
+            return transactionDate === filterDate;
+        });
+    }
+    
+    if (filteredTransactions.length === 0) {
+        historyList.innerHTML = '<div class="empty-history">Tidak ada riwayat transaksi</div>';
+        return;
+    }
+    
+    // Urutkan dari yang terbaru
+    filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    filteredTransactions.forEach(transaction => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        
+        const transactionDate = new Date(transaction.timestamp);
+        const formattedDate = transactionDate.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        let itemsHTML = '';
+        transaction.items.forEach(item => {
+            itemsHTML += `
+                <div class="history-product">
+                    <span>${item.name} x${item.quantity}</span>
+                    <span>${formatRupiah(item.price * item.quantity)}</span>
+                </div>
+            `;
+        });
+        
+        historyItem.innerHTML = `
+            <div class="history-header">
+                <div class="history-id">Transaksi #${transaction.id}</div>
+                <div class="history-date">${formattedDate}</div>
+            </div>
+            <div class="history-details">
+                <div class="history-products">
+                    ${itemsHTML}
+                </div>
+                <div class="history-summary">
+                    <div class="history-subtotal">
+                        <span>Subtotal:</span>
+                        <span>${formatRupiah(transaction.subtotal)}</span>
+                    </div>
+                    <div class="history-tax">
+                        <span>Pajak (10%):</span>
+                        <span>${formatRupiah(transaction.tax)}</span>
+                    </div>
+                    <div class="history-total">
+                        <span>Total:</span>
+                        <span>${formatRupiah(transaction.total)}</span>
+                    </div>
+                    <div class="history-cash">
+                        <span>Tunai:</span>
+                        <span>${formatRupiah(transaction.cash)}</span>
+                    </div>
+                    <div class="history-change">
+                        <span>Kembalian:</span>
+                        <span>${formatRupiah(transaction.change)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        historyList.appendChild(historyItem);
+    });
+}
+
 // Tutup modal
 closeModalButtons.forEach(button => {
     button.addEventListener('click', function() {
         productsModal.style.display = 'none';
         checkoutModal.style.display = 'none';
+        historyModal.style.display = 'none';
     });
 });
 
@@ -310,6 +388,9 @@ window.addEventListener('click', function(e) {
     }
     if (e.target === checkoutModal) {
         checkoutModal.style.display = 'none';
+    }
+    if (e.target === historyModal) {
+        historyModal.style.display = 'none';
     }
 });
 
@@ -394,7 +475,7 @@ addProductForm.addEventListener('submit', function(e) {
     });
     
     saveToLocalStorage();
-    loadProducts();
+    loadProducts(); // Update produk secara realtime
     loadAdminProducts();
     
     // Reset form
@@ -434,7 +515,7 @@ function editProduct(productId) {
     product.stock = newStock;
     
     saveToLocalStorage();
-    loadProducts();
+    loadProducts(); // Update produk secara realtime
     loadAdminProducts();
     
     showToast('Produk berhasil diupdate');
@@ -451,7 +532,7 @@ function deleteProduct(productId) {
     products = products.filter(product => product.id !== productId);
     
     saveToLocalStorage();
-    loadProducts();
+    loadProducts(); // Update produk secara realtime
     loadAdminProducts();
     updateCart();
     
@@ -494,7 +575,21 @@ confirmPaymentBtn.addEventListener('click', function() {
         }
     });
     
-    // Simpan perubahan stok
+    // Simpan transaksi ke history
+    const transaction = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        items: [...cart],
+        subtotal: subtotal,
+        tax: tax,
+        total: total,
+        cash: cashAmount,
+        change: cashAmount - total
+    };
+    
+    transactions.push(transaction);
+    
+    // Simpan perubahan
     saveToLocalStorage();
     
     // Cetak struk (simulasi)
@@ -518,422 +613,4 @@ confirmPaymentBtn.addEventListener('click', function() {
 document.addEventListener('DOMContentLoaded', function() {
     loadProducts();
     updateCart();
-    
-    // Event listener untuk semua elemen yang diperlukan
-    if (clearCartBtn) {
-        clearCartBtn.addEventListener('click', function() {
-            if (cart.length > 0) {
-                if (confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) {
-                    cart = [];
-                    saveToLocalStorage();
-                    updateCart();
-                    showToast('Keranjang dikosongkan');
-                }
-            }
-        });
-    }
-    
-    if (checkoutBtn) {
-        checkoutBtn.addEventListener('click', function() {
-            if (cart.length === 0) {
-                alert('Keranjang belanja kosong!');
-                return;
-            }
-            
-            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-            const tax = subtotal * 0.1;
-            const total = subtotal + tax;
-            
-            checkoutTotalElement.textContent = formatRupiah(total);
-            cashAmountInput.value = '';
-            changeAmountElement.textContent = formatRupiah(0);
-            
-            checkoutModal.style.display = 'block';
-        });
-    }
-    
-    if (manageProductsBtn) {
-        manageProductsBtn.addEventListener('click', function() {
-            loadAdminProducts();
-            productsModal.style.display = 'block';
-        });
-    }
-    
-    if (confirmPaymentBtn) {
-        confirmPaymentBtn.addEventListener('click', function() {
-            const cashAmount = parseInt(cashAmountInput.value) || 0;
-            const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-            const tax = subtotal * 0.1;
-            const total = subtotal + tax;
-            
-            if (cashAmount < total) {
-                alert('Jumlah uang tidak cukup!');
-                return;
-            }
-            
-            // Kurangi stok produk
-            cart.forEach(cartItem => {
-                const product = products.find(p => p.id === cartItem.id);
-                if (product) {
-                    product.stock -= cartItem.quantity;
-                }
-            });
-            
-            // Simpan perubahan stok
-            saveToLocalStorage();
-            
-            // Cetak struk (simulasi)
-            alert('Pembayaran berhasil! Struk telah dicetak.');
-            
-            // Reset keranjang
-            cart = [];
-            saveToLocalStorage();
-            updateCart();
-            
-            // Tutup modal
-            checkoutModal.style.display = 'none';
-            
-            // Reload produk untuk update stok
-            loadProducts();
-            
-            showToast('Transaksi berhasil diselesaikan');
-        });
-    }
-    
-    if (addProductForm) {
-        addProductForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('product-name').value;
-            const code = document.getElementById('product-code').value;
-            const price = parseInt(document.getElementById('product-price').value);
-            const stock = parseInt(document.getElementById('product-stock').value);
-            
-            // Cek apakah kode produk sudah ada
-            if (products.some(product => product.code === code)) {
-                alert('Kode produk sudah ada!');
-                return;
-            }
-            
-            // Generate ID baru
-            const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-            
-            // Tambah produk baru
-            products.push({
-                id: newId,
-                name,
-                code,
-                price,
-                stock
-            });
-            
-            saveToLocalStorage();
-            loadProducts();
-            loadAdminProducts();
-            
-            // Reset form
-            addProductForm.reset();
-            
-            showToast('Produk berhasil ditambahkan');
-        });
-    }
 });
-
-// Simulasi database menggunakan localStorage
-const DB_KEYS = {
-    PRODUCTS: 'pos_products',
-    TRANSACTIONS: 'pos_transactions'
-};
-
-// Inisialisasi data produk contoh jika belum ada
-function initializeProducts() {
-    if (!localStorage.getItem(DB_KEYS.PRODUCTS)) {
-        const defaultProducts = [
-            { id: 1, name: "Kopi Hitam", code: "KH001", price: 15000, stock: 50 },
-            { id: 2, name: "Teh Manis", code: "TM002", price: 10000, stock: 45 },
-            { id: 3, name: "Roti Bakar", code: "RB003", price: 20000, stock: 30 },
-            { id: 4, name: "Nasi Goreng", code: "NG004", price: 25000, stock: 25 },
-            { id: 5, name: "Mie Goreng", code: "MG005", price: 22000, stock: 20 },
-            { id: 6, name: "Air Mineral", code: "AM006", price: 5000, stock: 100 }
-        ];
-        localStorage.setItem(DB_KEYS.PRODUCTS, JSON.stringify(defaultProducts));
-    }
-}
-
-// Fungsi untuk mendapatkan produk
-function getProducts() {
-    return JSON.parse(localStorage.getItem(DB_KEYS.PRODUCTS)) || [];
-}
-
-// Fungsi untuk menyimpan produk
-function saveProducts(products) {
-    localStorage.setItem(DB_KEYS.PRODUCTS, JSON.stringify(products));
-    // Memperbarui UI produk
-    loadProductsToUI();
-}
-
-// Fungsi untuk memuat produk ke UI
-function loadProductsToUI() {
-    const productsGrid = document.getElementById('products-grid');
-    const products = getProducts();
-    
-    productsGrid.innerHTML = '';
-    
-    products.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <div class="product-info">
-                <h3>${product.name}</h3>
-                <p>Kode: ${product.code}</p>
-                <p class="price">Rp ${product.price.toLocaleString('id-ID')}</p>
-            </div>
-            <div class="product-stock">
-                Stok: ${product.stock}
-            </div>
-            <button class="add-to-cart" data-id="${product.id}">
-                <i class="fas fa-plus"></i> Tambah
-            </button>
-        `;
-        productsGrid.appendChild(productCard);
-    });
-    
-    // Tambahkan event listener untuk tombol tambah ke keranjang
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            addToCart(productId);
-        });
-    });
-}
-
-// Fungsi untuk memuat produk ke modal admin
-function loadProductsToAdmin() {
-    const adminProductsList = document.getElementById('admin-products-list');
-    const products = getProducts();
-    
-    adminProductsList.innerHTML = '';
-    
-    products.forEach(product => {
-        const productItem = document.createElement('div');
-        productItem.className = 'admin-product-item';
-        productItem.innerHTML = `
-            <div class="product-details">
-                <h4>${product.name}</h4>
-                <p>Kode: ${product.code} | Harga: Rp ${product.price.toLocaleString('id-ID')} | Stok: ${product.stock}</p>
-            </div>
-            <div class="product-actions">
-                <button class="edit-product" data-id="${product.id}">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="delete-product" data-id="${product.id}">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
-        adminProductsList.appendChild(productItem);
-    });
-    
-    // Tambahkan event listener untuk tombol edit dan hapus
-    document.querySelectorAll('.edit-product').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            editProduct(productId);
-        });
-    });
-    
-    document.querySelectorAll('.delete-product').forEach(button => {
-        button.addEventListener('click', function() {
-            const productId = parseInt(this.getAttribute('data-id'));
-            deleteProduct(productId);
-        });
-    });
-}
-
-// Fungsi untuk menambah transaksi ke history
-function addToHistory(transaction) {
-    let transactions = JSON.parse(localStorage.getItem(DB_KEYS.TRANSACTIONS)) || [];
-    transaction.id = Date.now(); // ID unik berdasarkan timestamp
-    transaction.date = new Date().toISOString();
-    transactions.push(transaction);
-    localStorage.setItem(DB_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-}
-
-// Fungsi untuk memuat history transaksi
-function loadHistory() {
-    const historyList = document.getElementById('history-list');
-    let transactions = JSON.parse(localStorage.getItem(DB_KEYS.TRANSACTIONS)) || [];
-    
-    // Filter berdasarkan tanggal jika ada
-    const dateFilter = document.getElementById('history-date').value;
-    if (dateFilter) {
-        transactions = transactions.filter(transaction => {
-            const transactionDate = new Date(transaction.date).toLocaleDateString('en-CA');
-            return transactionDate === dateFilter;
-        });
-    }
-    
-    historyList.innerHTML = '';
-    
-    if (transactions.length === 0) {
-        historyList.innerHTML = '<p class="no-data">Tidak ada riwayat transaksi</p>';
-        return;
-    }
-    
-    transactions.reverse().forEach(transaction => {
-        const historyItem = document.createElement('div');
-        historyItem.className = 'history-item';
-        
-        const transactionDate = new Date(transaction.date);
-        const formattedDate = transactionDate.toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        let productsHTML = '';
-        transaction.items.forEach(item => {
-            productsHTML += `
-                <div class="history-product">
-                    <span>${item.name} x${item.quantity}</span>
-                    <span>Rp ${(item.price * item.quantity).toLocaleString('id-ID')}</span>
-                </div>
-            `;
-        });
-        
-        historyItem.innerHTML = `
-            <div class="history-header">
-                <span class="history-id">Transaksi #${transaction.id}</span>
-                <span class="history-date">${formattedDate}</span>
-            </div>
-            <div class="history-details">
-                <div class="history-products">
-                    ${productsHTML}
-                </div>
-                <div class="history-summary">
-                    <div class="history-subtotal">
-                        Subtotal: Rp ${transaction.subtotal.toLocaleString('id-ID')}
-                    </div>
-                    <div class="history-tax">
-                        Pajak: Rp ${transaction.tax.toLocaleString('id-ID')}
-                    </div>
-                    <div class="history-total">
-                        Total: Rp ${transaction.total.toLocaleString('id-ID')}
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        historyList.appendChild(historyItem);
-    });
-}
-
-// Event listener untuk tombol history
-document.getElementById('history-btn').addEventListener('click', function() {
-    const historyModal = document.getElementById('history-modal');
-    historyModal.style.display = 'block';
-    loadHistory();
-});
-
-// Event listener untuk filter history
-document.getElementById('apply-filter').addEventListener('click', function() {
-    loadHistory();
-});
-
-// Event listener untuk form tambah produk
-document.getElementById('add-product-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('product-name').value;
-    const code = document.getElementById('product-code').value;
-    const price = parseInt(document.getElementById('product-price').value);
-    const stock = parseInt(document.getElementById('product-stock').value);
-    
-    const products = getProducts();
-    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-    
-    const newProduct = {
-        id: newId,
-        name,
-        code,
-        price,
-        stock
-    };
-    
-    products.push(newProduct);
-    saveProducts(products);
-    
-    // Reset form
-    this.reset();
-    
-    // Tampilkan notifikasi
-    showToast('Produk berhasil ditambahkan');
-    
-    // Beralih ke tab daftar produk
-    switchTab('products-list');
-});
-
-// Fungsi untuk menghapus produk
-function deleteProduct(id) {
-    if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
-        let products = getProducts();
-        products = products.filter(product => product.id !== id);
-        saveProducts(products);
-        loadProductsToAdmin();
-        showToast('Produk berhasil dihapus');
-    }
-}
-
-// Inisialisasi saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    initializeProducts();
-    loadProductsToUI();
-    
-    // Event listener untuk modal produk
-    const productsModal = document.getElementById('products-modal');
-    const manageProductsBtn = document.getElementById('manage-products-btn');
-    
-    manageProductsBtn.addEventListener('click', function() {
-        productsModal.style.display = 'block';
-        loadProductsToAdmin();
-    });
-    
-    // Event listener untuk tab
-    document.querySelectorAll('.tab-btn').forEach(tab => {
-        tab.addEventListener('click', function() {
-            const tabName = this.getAttribute('data-tab');
-            switchTab(tabName);
-        });
-    });
-});
-
-// Fungsi untuk beralih tab
-function switchTab(tabName) {
-    // Nonaktifkan semua tab
-    document.querySelectorAll('.tab-btn').forEach(tab => {
-        tab.classList.remove('active');
-    });
-    
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    // Aktifkan tab yang dipilih
-    document.querySelector(`.tab-btn[data-tab="${tabName}"]`).classList.add('active');
-    document.getElementById(tabName).classList.add('active');
-}
-
-// Fungsi untuk menampilkan toast notifikasi
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toast-message');
-    
-    toastMessage.textContent = message;
-    toast.classList.add('show');
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
