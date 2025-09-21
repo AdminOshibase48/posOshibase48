@@ -1,43 +1,173 @@
+:root {
+    --primary-color: #3B82F6;
+    --secondary-color: #60A5FA;
+    --background-color: #E2E8F0;
+    --card-bg: #FFFFFF;
+    --text-color: #333;
+    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 body {
-    font-family: sans-serif;
-    background-color: #f4f4f4;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
     margin: 0;
-    padding: 20px;
+    color: var(--text-color);
 }
 
-main {
-    max-width: 800px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.hidden {
+.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+#app-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+}
+
+#app-container.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* UI Elements */
+.page {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 2rem;
+    width: 90%;
+    max-width: 1200px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+header nav button {
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem 1rem;
+    color: var(--text-color);
+    font-weight: 600;
+    cursor: pointer;
+    position: relative;
+}
+
+header nav button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary-color);
+    animation: underline 0.3s ease;
+}
+
+.section {
+    transition: opacity 0.3s ease;
+}
+
+.section.hidden {
     display: none;
 }
 
-#login-page, #dashboard-page {
+.pos-main {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.item-list-section {
+    background: #F8FAFC;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+#item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.item-card {
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
     text-align: center;
-}
-
-#login-form input, button {
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-#dashboard-page nav {
-    margin-bottom: 20px;
-}
-
-#dashboard-page button {
-    background-color: #333;
-    color: white;
-    border: none;
     cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* Styling lainnya bisa ditambahkan */
+.item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.cart-section {
+    background: #F8FAFC;
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+#cart-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #E2E8F0;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Animasi */
+@keyframes underline {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+}
