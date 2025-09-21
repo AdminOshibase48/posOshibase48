@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="public/style.css">
+
+    <!-- Firebase SDK (Compat version biar gampang) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
 <body class="dashboard-page">
     <header>
@@ -24,36 +28,36 @@
                 </button>
             </div>
         </div>
-        <!-- Tambahkan di dalam <header> setelah user-info -->
-<div class="header-actions">
-    <button id="history-btn" class="btn-secondary">
-        <i class="fas fa-history"></i> Riwayat
-    </button>
-</div>
-
-<!-- History Modal -->
-<div id="history-modal" class="modal">
-    <div class="modal-content large-modal">
-        <div class="modal-header">
-            <h2>Riwayat Transaksi</h2>
-            <span class="close">&times;</span>
-        </div>
         
-        <div class="modal-body">
-            <div class="history-filters">
-                <div class="input-group">
-                    <label for="history-date">Filter Tanggal</label>
-                    <input type="date" id="history-date">
+        <div class="header-actions">
+            <button id="history-btn" class="btn-secondary">
+                <i class="fas fa-history"></i> Riwayat
+            </button>
+        </div>
+
+        <!-- History Modal -->
+        <div id="history-modal" class="modal">
+            <div class="modal-content large-modal">
+                <div class="modal-header">
+                    <h2>Riwayat Transaksi</h2>
+                    <span class="close">&times;</span>
                 </div>
-                <button id="apply-filter" class="btn-primary">Terapkan</button>
-            </div>
-            
-            <div class="history-list" id="history-list">
-                <!-- History items will be loaded here -->
+                
+                <div class="modal-body">
+                    <div class="history-filters">
+                        <div class="input-group">
+                            <label for="history-date">Filter Tanggal</label>
+                            <input type="date" id="history-date">
+                        </div>
+                        <button id="apply-filter" class="btn-primary">Terapkan</button>
+                    </div>
+                    
+                    <div class="history-list" id="history-list">
+                        <!-- History items will be loaded here -->
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
     </header>
 
     <main>
@@ -210,7 +214,26 @@
         </div>
     </div>
 
+    <!-- Firebase Config -->
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDdCF4P0eUaJp_l5EzGR_JAP2IPdzjJytY",
+        authDomain: "pososhibase48.firebaseapp.com",
+        databaseURL: "https://pososhibase48-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "pososhibase48",
+        storageBucket: "pososhibase48.appspot.com",
+        messagingSenderId: "949946735395",
+        appId: "1:949946735395:web:a1c8b6fa6630780d964a96",
+        measurementId: "G-8276S165X1"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const database = firebase.database();
+    </script>
+
+    <!-- Script utama -->
     <script src="script.js"></script>
+
     <script>
         // Cek status login
         if (localStorage.getItem('isLoggedIn') !== 'true') {
@@ -224,26 +247,4 @@
         });
     </script>
 </body>
-    <!-- Di bagian head -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-<!-- Di bagian body, sebelum script.js -->
-<script>
-  // Konfigurasi Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyDdCF4P0eUaJp_l5EzGR_JAP2IPdzjJytY",
-    authDomain: "pososhibase48.firebaseapp.com",
-    databaseURL: "https://pososhibase48-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "pososhibase48",
-    storageBucket: "pososhibase48.firebasestorage.app",
-    messagingSenderId: "949946735395",
-    appId: "1:949946735395:web:a1c8b6fa6630780d964a96"
-    measurementId: "G-8276S165X1"
-  };
-  
-  // Inisialisasi Firebase
-  firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
-</script>
 </html>
