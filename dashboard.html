@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CashierPOS - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="public/style.css">
+</head>
+<body class="dashboard-page">
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-cash-register"></i>
+                <h1>Cashier<span>POS</span></h1>
+            </div>
+            
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span id="current-user">Admin</span>
+                <button id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Left Panel - Products -->
+            <div class="left-panel">
+                <div class="search-section">
+                    <div class="input-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="search-product" placeholder="Cari nama atau kode barang...">
+                    </div>
+                </div>
+                
+                <div class="products-section">
+                    <h2>Daftar Produk</h2>
+                    <div class="products-grid" id="products-grid">
+                        <!-- Products will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Cart -->
+            <div class="right-panel">
+                <div class="cart-section">
+                    <h2>Keranjang Belanja</h2>
+                    <div class="cart-items" id="cart-items">
+                        <!-- Cart items will be loaded here -->
+                    </div>
+                    
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">Rp 0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Pajak (10%)</span>
+                            <span id="tax">Rp 0</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span id="total">Rp 0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cart-actions">
+                        <button class="btn-secondary" id="clear-cart">
+                            <i class="fas fa-trash"></i> Kosongkan
+                        </button>
+                        <button class="btn-primary" id="checkout">
+                            <i class="fas fa-check"></i> Bayar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button id="manage-products-btn" class="fab">
+            <i class="fas fa-cog"></i>
+        </button>
+    </div>
+
+    <!-- Manage Products Modal -->
+    <div id="products-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Kelola Produk</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="products-list">Daftar Produk</button>
+                    <button class="tab-btn" data-tab="add-product">Tambah Produk</button>
+                </div>
+                
+                <div class="tab-content active" id="products-list">
+                    <div class="products-list" id="admin-products-list">
+                        <!-- Products list for admin -->
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="add-product">
+                    <form id="add-product-form">
+                        <div class="input-group">
+                            <label for="product-name">Nama Produk</label>
+                            <input type="text" id="product-name" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="product-code">Kode Produk</label>
+                            <input type="text" id="product-code" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="product-price">Harga (Rp)</label>
+                            <input type="number" id="product-price" min="0" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label for="product-stock">Stok</label>
+                            <input type="number" id="product-stock" min="0" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-plus"></i> Tambah Produk
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Pembayaran</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <div class="payment-details">
+                    <div class="summary-row">
+                        <span>Total Belanja</span>
+                        <span id="checkout-total">Rp 0</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="cash-amount">Jumlah Uang</label>
+                        <input type="number" id="cash-amount" min="0" placeholder="Masukkan jumlah uang">
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Kembalian</span>
+                        <span id="change-amount">Rp 0</span>
+                    </div>
+                </div>
+                
+                <button class="btn-primary" id="confirm-payment">
+                    <i class="fas fa-receipt"></i> Cetak Struk
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Cek status login
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>
