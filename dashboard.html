@@ -287,13 +287,13 @@
     <script>
         // Cek status login
         if (localStorage.getItem('isLoggedIn') !== 'true') {
-            window.location.href = 'index.html';
+            window.location.href = 'index';
         }
 
         // Logout functionality
         document.getElementById('logout-btn').addEventListener('click', function() {
             localStorage.removeItem('isLoggedIn');
-            window.location.href = 'index.html';
+            window.location.href = 'index';
         });
     </script>
 </body>
