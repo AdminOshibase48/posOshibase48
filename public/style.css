@@ -741,3 +741,27 @@ main {
         border-top: 1px solid #e0e0e0;
     }
 }
+
+/* Tombol Sinkronisasi */
+.sync-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+}
+
+.sync-btn:hover {
+    background: #3d8b40;
+}
+
+/* Responsif untuk mobile */
+@media (max-width: 768px) {
+    .sync-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+}
