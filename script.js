@@ -706,3 +706,149 @@ confirmPaymentBtn.addEventListener('click', async function() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeData();
 });
+
+// Tambahkan event listener untuk tombol hapus riwayat
+document.getElementById('clear-history').addEventListener('click', function() {
+    clearHistory();
+});
+
+// Fungsi untuk menghapus semua riwayat transaksi
+function clearHistory() {
+    if (transactions.length === 0) {
+        alert('Tidak ada riwayat transaksi untuk dihapus!');
+        return;
+    }
+    
+    if (confirm('Apakah Anda yakin ingin menghapus semua riwayat transaksi? Tindakan ini tidak dapat dibatalkan.')) {
+        transactions = [];
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        
+        // Hapus juga dari Firebase jika menggunakan Firebase
+        try {
+            database.ref('transactions').set([]);
+        } catch (error) {
+            console.error('Error menghapus riwayat dari Firebase:', error);
+        }
+        
+        // Perbarui tampilan
+        loadHistory();
+        showToast('Semua riwayat transaksi telah dihapus');
+    }
+}
+
+// Fungsi untuk menghapus transaksi tertentu (opsional)
+function deleteTransaction(transactionId) {
+    if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
+        transactions = transactions.filter(transaction => transaction.id !== transactionId);
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        
+        // Hapus juga dari Firebase jika menggunakan Firebase
+        try {
+            database.ref('transactions').set(transactions);
+        } catch (error) {
+            console.error('Error menghapus transaksi dari Firebase:', error);
+        }
+        
+        // Perbarui tampilan
+        loadHistory();
+        showToast('Transaksi berhasil dihapus');
+    }
+}
+
+// Modifikasi fungsi loadHistory untuk menambahkan tombol hapus per item
+function loadHistory() {
+    historyList.innerHTML = '';
+    
+    let filteredTransactions = transactions;
+    
+    // Filter berdasarkan tanggal jika ada
+    if (historyDateFilter.value) {
+        filteredTransactions = transactions.filter(transaction => {
+            const transactionDate = new Date(transaction.timestamp).toLocaleDateString('id-ID');
+            const filterDate = new Date(historyDateFilter.value).toLocaleDateString('id-ID');
+            return transactionDate === filterDate;
+        });
+    }
+    
+    if (filteredTransactions.length === 0) {
+        historyList.innerHTML = '<div class="empty-history">Tidak ada riwayat transaksi</div>';
+        return;
+    }
+    
+    // Urutkan dari yang terbaru
+    filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    filteredTransactions.forEach(transaction => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        
+        const transactionDate = new Date(transaction.timestamp);
+        const formattedDate = transactionDate.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        let itemsHTML = '';
+        transaction.items.forEach(item => {
+            itemsHTML += `
+                <div class="history-product">
+                    <span>${item.name} x${item.quantity}</span>
+                    <span>${formatRupiah(item.price * item.quantity)}</span>
+                </div>
+            `;
+        });
+        
+        historyItem.innerHTML = `
+            <div class="history-header">
+                <div class="history-id">Transaksi #${transaction.id}</div>
+                <div class="history-date">${formattedDate}</div>
+            </div>
+            <div class="history-details">
+                <div class="history-products">
+                    ${itemsHTML}
+                </div>
+                <div class="history-summary">
+                    <div class="history-subtotal">
+                        <span>Subtotal:</span>
+                        <span>${formatRupiah(transaction.subtotal)}</span>
+                    </div>
+                    <div class="history-tax">
+                        <span>Pajak (10%):</span>
+                        <span>${formatRupiah(transaction.tax)}</span>
+                    </div>
+                    <div class="history-total">
+                        <span>Total:</span>
+                        <span>${formatRupiah(transaction.total)}</span>
+                    </div>
+                    <div class="history-cash">
+                        <span>Tunai:</span>
+                        <span>${formatRupiah(transaction.cash)}</span>
+                    </div>
+                    <div class="history-change">
+                        <span>Kembalian:</span>
+                        <span>${formatRupiah(transaction.change)}</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Tombol Hapus Transaksi Tertentu -->
+            <div class="history-actions">
+                <button class="btn-danger delete-transaction" data-id="${transaction.id}">
+                    <i class="fas fa-trash"></i> Hapus Transaksi
+                </button>
+            </div>
+        `;
+        
+        historyList.appendChild(historyItem);
+    });
+    
+    // Tambahkan event listener untuk tombol hapus transaksi tertentu
+    document.querySelectorAll('.delete-transaction').forEach(button => {
+        button.addEventListener('click', function() {
+            const transactionId = parseInt(this.getAttribute('data-id'));
+            deleteTransaction(transactionId);
+        });
+    });
+}
