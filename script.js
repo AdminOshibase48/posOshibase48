@@ -1,53 +1,94 @@
-// Data produk (disimpan di localStorage)
-let products = JSON.parse(localStorage.getItem('products')) || [
-    { id: 1, name: 'Buku Tulis', code: 'BT001', price: 5000, stock: 50 },
-    { id: 2, name: 'Pensil 2B', code: 'PN002', price: 2000, stock: 100 },
-    { id: 3, name: 'Penghapus', code: 'PH003', price: 1500, stock: 80 },
-    { id: 4, name: 'Penggaris', code: 'PG004', price: 3000, stock: 40 },
-    { id: 5, name: 'Spidol', code: 'SP005', price: 7000, stock: 30 },
-    { id: 6, name: 'Stapler', code: 'ST006', price: 15000, stock: 20 }
-];
-
-// Keranjang belanja
-let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-// Data transaksi history
-let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+// Data produk (disimpan di localStorage dan Firebase)
+let products = [];
+let cart = [];
+let transactions = [];
 
 // Elemen DOM
-const productsGrid = document.getElementById('products-grid');
-const searchProductInput = document.getElementById('search-product');
-const cartItems = document.getElementById('cart-items');
-const subtotalElement = document.getElementById('subtotal');
-const taxElement = document.getElementById('tax');
-const totalElement = document.getElementById('total');
-const clearCartBtn = document.getElementById('clear-cart');
-const checkoutBtn = document.getElementById('checkout');
-const manageProductsBtn = document.getElementById('manage-products-btn');
-const productsModal = document.getElementById('products-modal');
-const checkoutModal = document.getElementById('checkout-modal');
-const closeModalButtons = document.querySelectorAll('.close');
-const adminProductsList = document.getElementById('admin-products-list');
-const addProductForm = document.getElementById('add-product-form');
-const tabButtons = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
-const cashAmountInput = document.getElementById('cash-amount');
-const changeAmountElement = document.getElementById('change-amount');
-const checkoutTotalElement = document.getElementById('checkout-total');
-const confirmPaymentBtn = document.getElementById('confirm-payment');
-const toast = document.getElementById('toast');
-const toastMessage = document.getElementById('toast-message');
-const historyBtn = document.getElementById('history-btn');
-const historyModal = document.getElementById('history-modal');
-const historyList = document.getElementById('history-list');
-const historyDateFilter = document.getElementById('history-date');
-const applyFilterBtn = document.getElementById('apply-filter');
+// ... (tetap sama seperti sebelumnya)
 
-// Fungsi untuk menyimpan data ke localStorage
-function saveToLocalStorage() {
-    localStorage.setItem('products', JSON.stringify(products));
-    localStorage.setItem('cart', JSON.stringify(cart));
-    localStorage.setItem('transactions', JSON.stringify(transactions));
+// Fungsi untuk inisialisasi data
+async function initializeData() {
+    try {
+        // Coba ambil data dari Firebase
+        const snapshot = await database.ref('products').once('value');
+        const firebaseProducts = snapshot.val();
+        
+        if (firebaseProducts && firebaseProducts.length > 0) {
+            // Gunakan data dari Firebase
+            products = firebaseProducts;
+            localStorage.setItem('products', JSON.stringify(products));
+            showToast('Data produk disinkronisasi dari cloud');
+        } else {
+            // Gunakan data default jika Firebase kosong
+            products = JSON.parse(localStorage.getItem('products')) || [
+                { id: 1, name: 'Buku Tulis', code: 'BT001', price: 5000, stock: 50 },
+                { id: 2, name: 'Pensil 2B', code: 'PN002', price: 2000, stock: 100 },
+                { id: 3, name: 'Penghapus', code: 'PH003', price: 1500, stock: 80 },
+                { id: 4, name: 'Penggaris', code: 'PG004', price: 3000, stock: 40 },
+                { id: 5, name: 'Spidol', code: 'SP005', price: 7000, stock: 30 },
+                { id: 6, name: 'Stapler', code: 'ST006', price: 15000, stock: 20 }
+            ];
+            
+            // Simpan ke Firebase
+            await database.ref('products').set(products);
+        }
+        
+        // Load cart dan transactions dari localStorage
+        cart = JSON.parse(localStorage.getItem('cart')) || [];
+        transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        
+        // Load data ke UI
+        loadProducts();
+        updateCart();
+        
+        // Setup listener untuk perubahan data dari perangkat lain
+        setupRealtimeListeners();
+        
+    } catch (error) {
+        console.error('Error initializing data:', error);
+        // Fallback ke localStorage jika Firebase error
+        products = JSON.parse(localStorage.getItem('products')) || [
+            { id: 1, name: 'Buku Tulis', code: 'BT001', price: 5000, stock: 50 },
+            { id: 2, name: 'Pensil 2B', code: 'PN002', price: 2000, stock: 100 },
+            { id: 3, name: 'Penghapus', code: 'PH003', price: 1500, stock: 80 },
+            { id: 4, name: 'Penggaris', code: 'PG004', price: 3000, stock: 40 },
+            { id: 5, name: 'Spidol', code: 'SP005', price: 7000, stock: 30 },
+            { id: 6, name: 'Stapler', code: 'ST006', price: 15000, stock: 20 }
+        ];
+        loadProducts();
+        updateCart();
+    }
+}
+
+// Setup listener untuk perubahan realtime
+function setupRealtimeListeners() {
+    // Listener untuk produk
+    database.ref('products').on('value', (snapshot) => {
+        const firebaseProducts = snapshot.val();
+        if (firebaseProducts && firebaseProducts.length > 0) {
+            products = firebaseProducts;
+            localStorage.setItem('products', JSON.stringify(products));
+            loadProducts();
+            showToast('Data produk diperbarui dari cloud');
+        }
+    });
+}
+
+// Fungsi untuk menyimpan data ke localStorage dan Firebase
+async function saveToStorage() {
+    try {
+        localStorage.setItem('products', JSON.stringify(products));
+        localStorage.setItem('cart', JSON.stringify(cart));
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        
+        // Simpan produk ke Firebase
+        await database.ref('products').set(products);
+        
+        // Simpan transactions ke Firebase
+        await database.ref('transactions').set(transactions);
+    } catch (error) {
+        console.error('Error saving to Firebase:', error);
+    }
 }
 
 // Format angka ke Rupiah
@@ -141,7 +182,7 @@ function addToCart(productId) {
         }
     }
     
-    saveToLocalStorage();
+    saveToStorage();
     updateCart();
 }
 
@@ -213,7 +254,7 @@ function increaseQuantity(productId) {
     
     if (item.quantity < product.stock) {
         item.quantity += 1;
-        saveToLocalStorage();
+        saveToStorage();
         updateCart();
     } else {
         alert('Stok tidak cukup!');
@@ -231,14 +272,14 @@ function decreaseQuantity(productId) {
         return;
     }
     
-    saveToLocalStorage();
+    saveToStorage();
     updateCart();
 }
 
 // Hapus item dari keranjang
 function removeFromCart(productId) {
     cart = cart.filter(item => item.id !== productId);
-    saveToLocalStorage();
+    saveToStorage();
     updateCart();
     showToast('Produk dihapus dari keranjang');
 }
@@ -248,7 +289,7 @@ clearCartBtn.addEventListener('click', function() {
     if (cart.length > 0) {
         if (confirm('Apakah Anda yakin ingin mengosongkan keranjang?')) {
             cart = [];
-            saveToLocalStorage();
+            saveToStorage();
             updateCart();
             showToast('Keranjang dikosongkan');
         }
@@ -448,7 +489,7 @@ function loadAdminProducts() {
 }
 
 // Tambah produk baru
-addProductForm.addEventListener('submit', function(e) {
+addProductForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const name = document.getElementById('product-name').value;
@@ -474,8 +515,8 @@ addProductForm.addEventListener('submit', function(e) {
         stock
     });
     
-    saveToLocalStorage();
-    loadProducts(); // Update produk secara realtime
+    await saveToStorage();
+    loadProducts();
     loadAdminProducts();
     
     // Reset form
@@ -485,7 +526,7 @@ addProductForm.addEventListener('submit', function(e) {
 });
 
 // Edit produk
-function editProduct(productId) {
+async function editProduct(productId) {
     const product = products.find(p => p.id === productId);
     
     if (!product) return;
@@ -514,15 +555,15 @@ function editProduct(productId) {
     product.price = newPrice;
     product.stock = newStock;
     
-    saveToLocalStorage();
-    loadProducts(); // Update produk secara realtime
+    await saveToStorage();
+    loadProducts();
     loadAdminProducts();
     
     showToast('Produk berhasil diupdate');
 }
 
 // Hapus produk
-function deleteProduct(productId) {
+async function deleteProduct(productId) {
     if (!confirm('Apakah Anda yakin ingin menghapus produk ini?')) return;
     
     // Hapus produk dari keranjang jika ada
@@ -531,8 +572,8 @@ function deleteProduct(productId) {
     // Hapus produk dari daftar
     products = products.filter(product => product.id !== productId);
     
-    saveToLocalStorage();
-    loadProducts(); // Update produk secara realtime
+    await saveToStorage();
+    loadProducts();
     loadAdminProducts();
     updateCart();
     
@@ -556,7 +597,7 @@ cashAmountInput.addEventListener('input', function() {
 });
 
 // Konfirmasi pembayaran
-confirmPaymentBtn.addEventListener('click', function() {
+confirmPaymentBtn.addEventListener('click', async function() {
     const cashAmount = parseInt(cashAmountInput.value) || 0;
     const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
     const tax = subtotal * 0.1;
@@ -590,14 +631,14 @@ confirmPaymentBtn.addEventListener('click', function() {
     transactions.push(transaction);
     
     // Simpan perubahan
-    saveToLocalStorage();
+    await saveToStorage();
     
     // Cetak struk (simulasi)
     alert('Pembayaran berhasil! Struk telah dicetak.');
     
     // Reset keranjang
     cart = [];
-    saveToLocalStorage();
+    await saveToStorage();
     updateCart();
     
     // Tutup modal
@@ -609,8 +650,20 @@ confirmPaymentBtn.addEventListener('click', function() {
     showToast('Transaksi berhasil diselesaikan');
 });
 
+// Tombol sinkronisasi manual (opsional)
+const syncButton = document.createElement('button');
+syncButton.innerHTML = '<i class="fas fa-sync-alt"></i> Sync';
+syncButton.className = 'sync-btn';
+syncButton.addEventListener('click', async function() {
+    showToast('Menyinkronisasi data...');
+    await saveToStorage();
+    showToast('Data berhasil disinkronisasi');
+});
+
+// Tambahkan tombol sync ke header
+document.querySelector('.user-info').appendChild(syncButton);
+
 // Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
-    loadProducts();
-    updateCart();
+    initializeData();
 });
