@@ -12,12 +12,6 @@ let products = JSON.parse(localStorage.getItem('products')) || [
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // Elemen DOM
-const loginScreen = document.getElementById('login-screen');
-const appScreen = document.getElementById('app-screen');
-const loginForm = document.getElementById('login-form');
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const logoutBtn = document.getElementById('logout-btn');
 const productsGrid = document.getElementById('products-grid');
 const searchProductInput = document.getElementById('search-product');
 const cartItems = document.getElementById('cart-items');
@@ -65,32 +59,6 @@ function showToast(message) {
         toast.classList.remove('show');
     }, 3000);
 }
-
-// Login functionality
-loginForm.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const username = usernameInput.value;
-    const password = passwordInput.value;
-    
-    // Validasi sederhana
-    if (username === 'admin' && password === 'admin123') {
-        loginScreen.classList.remove('active');
-        appScreen.classList.add('active');
-        loadProducts();
-        updateCart();
-    } else {
-        alert('Username atau password salah! Gunakan username: admin dan password: admin123');
-    }
-});
-
-// Logout functionality
-logoutBtn.addEventListener('click', function() {
-    loginScreen.classList.add('active');
-    appScreen.classList.remove('active');
-    usernameInput.value = '';
-    passwordInput.value = '';
-});
 
 // Load produk ke grid
 function loadProducts() {
@@ -210,7 +178,7 @@ function updateCart() {
                 </div>
                 <div class="cart-item-quantity">
                     <button class="quantity-btn decrease" data-id="${item.id}">-</button>
-                    <span>${item.quantity}</span>
+                    <span>${item.quantity</span>
                     <button class="quantity-btn increase" data-id="${item.id}">+</button>
                 </div>
                 <div class="cart-item-total">${formatRupiah(item.price * item.quantity)}</div>
@@ -546,8 +514,8 @@ confirmPaymentBtn.addEventListener('click', function() {
     showToast('Transaksi berhasil diselesaikan');
 });
 
-// Inisialisasi
-if (appScreen.classList.contains('active')) {
+// Inisialisasi saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
     loadProducts();
     updateCart();
-}
+});
