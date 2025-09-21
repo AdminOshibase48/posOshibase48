@@ -24,6 +24,36 @@
                 </button>
             </div>
         </div>
+        <!-- Tambahkan di dalam <header> setelah user-info -->
+<div class="header-actions">
+    <button id="history-btn" class="btn-secondary">
+        <i class="fas fa-history"></i> Riwayat
+    </button>
+</div>
+
+<!-- History Modal -->
+<div id="history-modal" class="modal">
+    <div class="modal-content large-modal">
+        <div class="modal-header">
+            <h2>Riwayat Transaksi</h2>
+            <span class="close">&times;</span>
+        </div>
+        
+        <div class="modal-body">
+            <div class="history-filters">
+                <div class="input-group">
+                    <label for="history-date">Filter Tanggal</label>
+                    <input type="date" id="history-date">
+                </div>
+                <button id="apply-filter" class="btn-primary">Terapkan</button>
+            </div>
+            
+            <div class="history-list" id="history-list">
+                <!-- History items will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
     </header>
 
     <main>
