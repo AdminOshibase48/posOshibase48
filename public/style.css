@@ -970,3 +970,70 @@ main {
         margin-top: 10px;
     }
 }
+
+/* Tombol Hapus */
+.btn-danger {
+    background: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.btn-danger:hover {
+    background: #d32f2f;
+}
+
+/* History Actions */
+.history-actions {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    text-align: right;
+}
+
+/* Untuk filter history */
+.history-filters {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.history-filters .input-group {
+    flex: 1;
+    margin-bottom: 0;
+    min-width: 200px;
+}
+
+.history-filters label {
+    margin-bottom: 5px;
+    display: block;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+    .history-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .history-filters .input-group {
+        min-width: auto;
+    }
+    
+    .history-actions {
+        text-align: center;
+    }
+    
+    .btn-danger {
+        width: 100%;
+        justify-content: center;
+    }
+}
