@@ -765,3 +765,208 @@ main {
         font-size: 12px;
     }
 }
+
+/* Input dengan kamera */
+.input-with-camera {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.camera-btn {
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.camera-btn:hover {
+    background: #3d8b40;
+}
+
+/* Unggah gambar */
+.image-upload-container {
+    margin-top: 10px;
+}
+
+.image-preview {
+    width: 100%;
+    height: 150px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-preview i {
+    font-size: 40px;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.image-preview span {
+    color: #666;
+    text-align: center;
+}
+
+.upload-options {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* Modal kamera */
+.camera-container {
+    width: 100%;
+    height: 300px;
+    background: #000;
+    margin-bottom: 15px;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+#camera-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.barcode-result {
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Tampilan produk dengan gambar */
+.product-card {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+}
+
+.product-image-container {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+    border-radius: 8px 8px 0 0;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f5f5;
+    color: #ccc;
+}
+
+.product-image-placeholder i {
+    font-size: 40px;
+}
+
+.product-info {
+    padding: 15px;
+    flex-grow: 1;
+}
+
+/* Untuk admin product list */
+.admin-product-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-product-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.admin-product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-product-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f5f5;
+    color: #ccc;
+}
+
+.admin-product-details {
+    flex-grow: 1;
+}
+
+.admin-product-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.admin-product-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+    .upload-options {
+        flex-direction: column;
+    }
+    
+    .upload-options button {
+        width: 100%;
+    }
+    
+    .camera-container {
+        height: 250px;
+    }
+    
+    .input-with-camera {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .camera-btn {
+        margin-top: 10px;
+    }
+}
