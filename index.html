@@ -47,19 +47,19 @@
             const password = document.getElementById('password').value;
             
             // Validasi sederhana
-            if (username === 'admin' && password === 'admin123') {
+            if (username === 'admin' && password === 'admin12') {
                 // Simpan status login di localStorage
                 localStorage.setItem('isLoggedIn', 'true');
                 // Redirect ke dashboard
                 window.location.href = 'dashboard.html';
             } else {
-                alert('Username atau password salah! Gunakan username: admin dan password: admin123');
+                alert('Username atau password salah! Gunakan username: admin dan password: admin12');
             }
         });
 
         // Cek jika sudah login, redirect ke dashboard
         if (localStorage.getItem('isLoggedIn') === 'true') {
-            window.location.href = 'dashboard.html';
+            window.location.href = 'dashboard';
         }
     </script>
 </body>
