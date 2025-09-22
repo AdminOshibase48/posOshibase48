@@ -32,15 +32,21 @@ const historyList = document.getElementById('history-list');
 const historyDateFilter = document.getElementById('history-date');
 const applyFilterBtn = document.getElementById('apply-filter');
 
+// Elemen DOM tambahan untuk fitur baru
+const cashButtons = document.querySelectorAll('.cash-btn');
+const cashError = document.getElementById('cash-error');
+
 // Fungsi untuk inisialisasi data
 async function initializeData() {
     try {
         // Coba ambil data dari Firebase
-        const snapshot = await database.ref('products').once('value');
-        const firebaseProducts = snapshot.val();
+        const productsSnapshot = await database.ref('products').once('value');
+        const transactionsSnapshot = await database.ref('transactions').once('value');
+        
+        const firebaseProducts = productsSnapshot.val();
+        const firebaseTransactions = transactionsSnapshot.val();
         
         if (firebaseProducts && firebaseProducts.length > 0) {
-            // Gunakan data dari Firebase
             products = firebaseProducts;
             localStorage.setItem('products', JSON.stringify(products));
             showToast('Data produk disinkronisasi dari cloud');
@@ -54,14 +60,19 @@ async function initializeData() {
                 { id: 5, name: 'Spidol', code: 'SP005', price: 7000, stock: 30 },
                 { id: 6, name: 'Stapler', code: 'ST006', price: 15000, stock: 20 }
             ];
-            
-            // Simpan ke Firebase
             await database.ref('products').set(products);
         }
         
-        // Load cart dan transactions dari localStorage
+        if (firebaseTransactions && firebaseTransactions.length > 0) {
+            transactions = firebaseTransactions;
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        } else {
+            transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            await database.ref('transactions').set(transactions);
+        }
+        
+        // Load cart dari localStorage
         cart = JSON.parse(localStorage.getItem('cart')) || [];
-        transactions = JSON.parse(localStorage.getItem('transactions')) || [];
         
         // Load data ke UI
         loadProducts();
@@ -81,6 +92,9 @@ async function initializeData() {
             { id: 5, name: 'Spidol', code: 'SP005', price: 7000, stock: 30 },
             { id: 6, name: 'Stapler', code: 'ST006', price: 15000, stock: 20 }
         ];
+        transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        cart = JSON.parse(localStorage.getItem('cart')) || [];
+        
         loadProducts();
         updateCart();
     }
@@ -96,6 +110,16 @@ function setupRealtimeListeners() {
             localStorage.setItem('products', JSON.stringify(products));
             loadProducts();
             showToast('Data produk diperbarui dari cloud');
+        }
+    });
+    
+    // Listener untuk transaksi (realtime)
+    database.ref('transactions').on('value', (snapshot) => {
+        const firebaseTransactions = snapshot.val();
+        if (firebaseTransactions && firebaseTransactions.length > 0) {
+            transactions = firebaseTransactions;
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            showToast('Data transaksi diperbarui dari cloud');
         }
     });
 }
@@ -345,6 +369,7 @@ checkoutBtn.addEventListener('click', function() {
     checkoutTotalElement.textContent = formatRupiah(total);
     cashAmountInput.value = '';
     changeAmountElement.textContent = formatRupiah(0);
+    cashError.style.display = 'none';
     
     checkoutModal.style.display = 'block';
 });
@@ -442,9 +467,23 @@ function loadHistory() {
                     </div>
                 </div>
             </div>
+            <!-- Tombol Hapus Transaksi Tertentu -->
+            <div class="history-actions">
+                <button class="btn-danger delete-transaction" data-id="${transaction.id}">
+                    <i class="fas fa-trash"></i> Hapus Transaksi
+                </button>
+            </div>
         `;
         
         historyList.appendChild(historyItem);
+    });
+    
+    // Tambahkan event listener untuk tombol hapus transaksi tertentu
+    document.querySelectorAll('.delete-transaction').forEach(button => {
+        button.addEventListener('click', function() {
+            const transactionId = parseInt(this.getAttribute('data-id'));
+            deleteTransaction(transactionId);
+        });
     });
 }
 
@@ -632,9 +671,25 @@ async function deleteProduct(productId) {
     showToast('Produk berhasil dihapus');
 }
 
-// Hitung kembalian
-cashAmountInput.addEventListener('input', function() {
-    const cashAmount = parseInt(this.value) || 0;
+// ========== FITUR BARU: TOMBOL NOMINAL UANG ==========
+
+// Tombol nominal uang
+cashButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        const amount = parseInt(this.getAttribute('data-amount'));
+        cashAmountInput.value = amount;
+        
+        // Hitung kembalian
+        calculateChange();
+        
+        // Sembunyikan pesan error
+        cashError.style.display = 'none';
+    });
+});
+
+// Fungsi hitung kembalian
+function calculateChange() {
+    const cashAmount = parseInt(cashAmountInput.value) || 0;
     const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
     const tax = subtotal * 0.1;
     const total = subtotal + tax;
@@ -643,10 +698,19 @@ cashAmountInput.addEventListener('input', function() {
     
     if (change >= 0) {
         changeAmountElement.textContent = formatRupiah(change);
+        cashError.style.display = 'none';
     } else {
         changeAmountElement.textContent = formatRupiah(0);
+        cashError.style.display = 'flex';
     }
+}
+
+// Update event listener untuk input uang
+cashAmountInput.addEventListener('input', function() {
+    calculateChange();
 });
+
+// ========== FITUR BARU: KONFIRMASI PEMBAYARAN REAL-TIME ==========
 
 // Konfirmasi pembayaran
 confirmPaymentBtn.addEventListener('click', async function() {
@@ -656,7 +720,8 @@ confirmPaymentBtn.addEventListener('click', async function() {
     const total = subtotal + tax;
     
     if (cashAmount < total) {
-        alert('Jumlah uang tidak cukup!');
+        cashError.style.display = 'flex';
+        cashAmountInput.focus();
         return;
     }
     
@@ -665,10 +730,11 @@ confirmPaymentBtn.addEventListener('click', async function() {
         const product = products.find(p => p.id === cartItem.id);
         if (product) {
             product.stock -= cartItem.quantity;
+            if (product.stock < 0) product.stock = 0;
         }
     });
     
-    // Simpan transaksi ke history
+    // Buat transaksi
     const transaction = {
         id: Date.now(),
         timestamp: new Date().toISOString(),
@@ -680,32 +746,124 @@ confirmPaymentBtn.addEventListener('click', async function() {
         change: cashAmount - total
     };
     
+    // Simpan transaksi ke array lokal dan Firebase
     transactions.push(transaction);
     
-    // Simpan perubahan
-    await saveToStorage();
-    
-    // Cetak struk (simulasi)
-    alert('Pembayaran berhasil! Struk telah dicetak.');
-    
-    // Reset keranjang
-    cart = [];
-    await saveToStorage();
-    updateCart();
-    
-    // Tutup modal
-    checkoutModal.style.display = 'none';
-    
-    // Reload produk untuk update stok
-    loadProducts();
-    
-    showToast('Transaksi berhasil diselesaikan');
+    try {
+        // Simpan ke localStorage
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        
+        // Simpan ke Firebase Realtime Database
+        await database.ref('transactions').set(transactions);
+        
+        // Simpan update stok produk ke Firebase
+        await database.ref('products').set(products);
+        
+        // Cetak struk
+        printReceipt(transaction);
+        
+        // Reset keranjang
+        cart = [];
+        localStorage.setItem('cart', JSON.stringify(cart));
+        
+        // Update UI
+        updateCart();
+        checkoutModal.style.display = 'none';
+        
+        // Reload produk untuk update stok
+        loadProducts();
+        
+        showToast('Transaksi berhasil diselesaikan');
+        
+    } catch (error) {
+        console.error('Error menyimpan transaksi:', error);
+        alert('Error menyimpan transaksi. Silakan coba lagi.');
+    }
 });
 
-// Inisialisasi saat halaman dimuat
-document.addEventListener('DOMContentLoaded', function() {
-    initializeData();
-});
+// Fungsi cetak struk
+function printReceipt(transaction) {
+    const receiptWindow = window.open('', '_blank');
+    const transactionDate = new Date(transaction.timestamp);
+    const formattedDate = transactionDate.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    let itemsHTML = '';
+    transaction.items.forEach(item => {
+        itemsHTML += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>${formatRupiah(item.price)}</td>
+                <td>${formatRupiah(item.price * item.quantity)}</td>
+            </tr>
+        `;
+    });
+    
+    receiptWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Struk Transaksi #${transaction.id}</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
+                .header { text-align: center; margin-bottom: 20px; }
+                table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+                th, td { padding: 5px; text-align: left; border-bottom: 1px dashed #ccc; }
+                .total-row { font-weight: bold; border-top: 2px solid #000; }
+                .thank-you { text-align: center; margin-top: 20px; font-style: italic; }
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>CashierPOS</h2>
+                <p>Struk Transaksi #${transaction.id}</p>
+                <p>${formattedDate}</p>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama Barang</th>
+                        <th>Qty</th>
+                        <th>Harga</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHTML}
+                </tbody>
+            </table>
+            
+            <div class="summary">
+                <p>Subtotal: ${formatRupiah(transaction.subtotal)}</p>
+                <p>Pajak (10%): ${formatRupiah(transaction.tax)}</p>
+                <p><strong>Total: ${formatRupiah(transaction.total)}</strong></p>
+                <p>Tunai: ${formatRupiah(transaction.cash)}</p>
+                <p>Kembalian: ${formatRupiah(transaction.change)}</p>
+            </div>
+            
+            <div class="thank-you">
+                <p>Terima kasih atas kunjungan Anda!</p>
+            </div>
+            
+            <script>
+                window.onload = function() {
+                    window.print();
+                    setTimeout(() => window.close(), 1000);
+                }
+            </script>
+        </body>
+        </html>
+    `);
+}
+
+// ========== FUNGSI TAMBAHAN UNTUK HISTORY ==========
 
 // Tambahkan event listener untuk tombol hapus riwayat
 document.getElementById('clear-history').addEventListener('click', function() {
@@ -736,7 +894,7 @@ function clearHistory() {
     }
 }
 
-// Fungsi untuk menghapus transaksi tertentu (opsional)
+// Fungsi untuk menghapus transaksi tertentu
 function deleteTransaction(transactionId) {
     if (confirm('Apakah Anda yakin ingin menghapus transaksi ini?')) {
         transactions = transactions.filter(transaction => transaction.id !== transactionId);
@@ -755,100 +913,7 @@ function deleteTransaction(transactionId) {
     }
 }
 
-// Modifikasi fungsi loadHistory untuk menambahkan tombol hapus per item
-function loadHistory() {
-    historyList.innerHTML = '';
-    
-    let filteredTransactions = transactions;
-    
-    // Filter berdasarkan tanggal jika ada
-    if (historyDateFilter.value) {
-        filteredTransactions = transactions.filter(transaction => {
-            const transactionDate = new Date(transaction.timestamp).toLocaleDateString('id-ID');
-            const filterDate = new Date(historyDateFilter.value).toLocaleDateString('id-ID');
-            return transactionDate === filterDate;
-        });
-    }
-    
-    if (filteredTransactions.length === 0) {
-        historyList.innerHTML = '<div class="empty-history">Tidak ada riwayat transaksi</div>';
-        return;
-    }
-    
-    // Urutkan dari yang terbaru
-    filteredTransactions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    filteredTransactions.forEach(transaction => {
-        const historyItem = document.createElement('div');
-        historyItem.className = 'history-item';
-        
-        const transactionDate = new Date(transaction.timestamp);
-        const formattedDate = transactionDate.toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        let itemsHTML = '';
-        transaction.items.forEach(item => {
-            itemsHTML += `
-                <div class="history-product">
-                    <span>${item.name} x${item.quantity}</span>
-                    <span>${formatRupiah(item.price * item.quantity)}</span>
-                </div>
-            `;
-        });
-        
-        historyItem.innerHTML = `
-            <div class="history-header">
-                <div class="history-id">Transaksi #${transaction.id}</div>
-                <div class="history-date">${formattedDate}</div>
-            </div>
-            <div class="history-details">
-                <div class="history-products">
-                    ${itemsHTML}
-                </div>
-                <div class="history-summary">
-                    <div class="history-subtotal">
-                        <span>Subtotal:</span>
-                        <span>${formatRupiah(transaction.subtotal)}</span>
-                    </div>
-                    <div class="history-tax">
-                        <span>Pajak (10%):</span>
-                        <span>${formatRupiah(transaction.tax)}</span>
-                    </div>
-                    <div class="history-total">
-                        <span>Total:</span>
-                        <span>${formatRupiah(transaction.total)}</span>
-                    </div>
-                    <div class="history-cash">
-                        <span>Tunai:</span>
-                        <span>${formatRupiah(transaction.cash)}</span>
-                    </div>
-                    <div class="history-change">
-                        <span>Kembalian:</span>
-                        <span>${formatRupiah(transaction.change)}</span>
-                    </div>
-                </div>
-            </div>
-            <!-- Tombol Hapus Transaksi Tertentu -->
-            <div class="history-actions">
-                <button class="btn-danger delete-transaction" data-id="${transaction.id}">
-                    <i class="fas fa-trash"></i> Hapus Transaksi
-                </button>
-            </div>
-        `;
-        
-        historyList.appendChild(historyItem);
-    });
-    
-    // Tambahkan event listener untuk tombol hapus transaksi tertentu
-    document.querySelectorAll('.delete-transaction').forEach(button => {
-        button.addEventListener('click', function() {
-            const transactionId = parseInt(this.getAttribute('data-id'));
-            deleteTransaction(transactionId);
-        });
-    });
-}
+// Inisialisasi saat halaman dimuat
+document.addEventListener('DOMContentLoaded', function() {
+    initializeData();
+});
