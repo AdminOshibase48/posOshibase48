@@ -9,10 +9,7 @@
     <link rel="stylesheet" href="public/style.css">
     <link rel="icon" type="image/png" href="img/logo.svg" />
     
-    <!-- Library untuk scan barcode -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
-
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 </head>
@@ -35,36 +32,8 @@
         
         <div class="header-actions">
             <button id="history-btn" class="btn-secondary">
-                <i class="fas fa-history"></i> Riwayat
+                <i class="fas fa-history"></i> Riwayat Transaksi
             </button>
-        </div>
-
-        <!-- History Modal -->
-        <div id="history-modal" class="modal">
-            <div class="modal-content large-modal">
-                <div class="modal-header">
-                    <h2>Riwayat Transaksi</h2>
-                    <span class="close">&times;</span>
-                </div>
-                
-                <div class="modal-body">
-                    <div class="history-filters">
-                        <div class="input-group">
-                            <label for="history-date">Filter Tanggal</label>
-                            <input type="date" id="history-date">
-                        </div>
-                        <button id="apply-filter" class="btn-primary">Terapkan</button>
-                         <!-- Tombol Hapus Riwayat -->
-                         <button id="clear-history" class="btn-danger">
-                         <i class="fas fa-trash"></i> Hapus Riwayat
-                         </button>
-                    </div>
-                    
-                    <div class="history-list" id="history-list">
-                        <!-- History items will be loaded here -->
-                    </div>
-                </div>
-            </div>
         </div>
     </header>
 
@@ -130,11 +99,44 @@
         </button>
     </div>
 
+    <!-- History Modal -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2><i class="fas fa-history"></i> Riwayat Transaksi</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <div class="history-filters">
+                    <div class="input-group">
+                        <label for="history-date"><i class="fas fa-calendar"></i> Filter Tanggal</label>
+                        <input type="date" id="history-date">
+                    </div>
+                    <button id="apply-filter" class="btn-primary">
+                        <i class="fas fa-filter"></i> Terapkan Filter
+                    </button>
+                    <button id="clear-history" class="btn-danger">
+                        <i class="fas fa-trash"></i> Hapus Semua Riwayat
+                    </button>
+                </div>
+                
+                <div class="history-list" id="history-list">
+                    <div class="empty-history">
+                        <i class="fas fa-receipt"></i>
+                        <h3>Belum ada riwayat transaksi</h3>
+                        <p>Transaksi yang telah dilakukan akan muncul di sini</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Manage Products Modal -->
     <div id="products-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Kelola Produk</h2>
+                <h2><i class="fas fa-cog"></i> Kelola Produk</h2>
                 <span class="close">&times;</span>
             </div>
             
@@ -162,7 +164,7 @@
                             <div class="input-with-camera">
                                 <input type="text" id="product-code" required>
                                 <button type="button" id="scan-barcode" class="camera-btn">
-                                    <i class="fas fa-camera"></i>
+                                    <i class="fas fa-camera"></i> Scan
                                 </button>
                             </div>
                         </div>
@@ -177,25 +179,6 @@
                             <input type="number" id="product-stock" min="0" required>
                         </div>
                         
-                        <div class="input-group">
-                            <label for="product-image">Gambar Produk (opsional)</label>
-                            <div class="image-upload-container">
-                                <div class="image-preview" id="image-preview">
-                                    <i class="fas fa-image"></i>
-                                    <span>Pratinjau gambar akan muncul di sini</span>
-                                </div>
-                                <div class="upload-options">
-                                    <input type="file" id="product-image" accept="image/*" style="display: none;">
-                                    <button type="button" id="capture-camera" class="btn-secondary">
-                                        <i class="fas fa-camera"></i> Ambil Foto
-                                    </button>
-                                    <button type="button" id="upload-image" class="btn-secondary">
-                                        <i class="fas fa-upload"></i> Unggah Gambar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
                         <button type="submit" class="btn-primary">
                             <i class="fas fa-plus"></i> Tambah Produk
                         </button>
@@ -205,21 +188,20 @@
         </div>
     </div>
 
-    <!-- Camera Modal untuk Scan Barcode -->
+    <!-- Camera Modal -->
     <div id="camera-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Scan Barcode</h2>
+                <h2><i class="fas fa-camera"></i> Scan Barcode</h2>
                 <span class="close">&times;</span>
             </div>
             <div class="modal-body">
                 <div class="camera-container">
                     <video id="camera-preview" autoplay playsinline></video>
-                    <canvas id="barcode-canvas" style="display: none;"></canvas>
                 </div>
                 <div class="camera-actions">
                     <button id="start-camera" class="btn-primary">
-                        <i class="fas fa-camera"></i> Mulai Scan
+                        <i class="fas fa-camera"></i> Mulai Kamera
                     </button>
                     <button id="stop-camera" class="btn-secondary" style="display: none;">
                         <i class="fas fa-stop"></i> Stop Kamera
@@ -234,25 +216,24 @@
     <div id="checkout-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Pembayaran</h2>
+                <h2><i class="fas fa-credit-card"></i> Pembayaran</h2>
                 <span class="close">&times;</span>
             </div>
             
             <div class="modal-body">
                 <div class="payment-details">
-                    <div class="summary-row">
+                    <div class="summary-row total">
                         <span>Total Belanja</span>
                         <span id="checkout-total">Rp 0</span>
                     </div>
                     
-                    <!-- Tombol nominal uang -->
                     <div class="cash-buttons">
                         <h3>Pilih Nominal:</h3>
                         <div class="cash-buttons-grid">
-                            <button type="button" class="cash-btn" data-amount="10000">10.000</button>
-                            <button type="button" class="cash-btn" data-amount="20000">20.000</button>
-                            <button type="button" class="cash-btn" data-amount="50000">50.000</button>
-                            <button type="button" class="cash-btn" data-amount="100000">100.000</button>
+                            <button type="button" class="cash-btn" data-amount="10000">Rp 10.000</button>
+                            <button type="button" class="cash-btn" data-amount="20000">Rp 20.000</button>
+                            <button type="button" class="cash-btn" data-amount="50000">Rp 50.000</button>
+                            <button type="button" class="cash-btn" data-amount="100000">Rp 100.000</button>
                         </div>
                     </div>
                     
@@ -266,7 +247,6 @@
                         <span id="change-amount">Rp 0</span>
                     </div>
 
-                    <!-- Pesan error jika uang kurang -->
                     <div id="cash-error" class="error-message" style="display: none;">
                         <i class="fas fa-exclamation-circle"></i>
                         <span>Jumlah uang tidak cukup!</span>
@@ -274,7 +254,7 @@
                 </div>
                 
                 <button class="btn-primary" id="confirm-payment">
-                    <i class="fas fa-receipt"></i> Cetak Struk
+                    <i class="fas fa-receipt"></i> Konfirmasi Pembayaran
                 </button>
             </div>
         </div>
@@ -290,22 +270,21 @@
 
     <!-- Firebase Config -->
     <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyDdCF4P0eUaJp_l5EzGR_JAP2IPdzjJytY",
-        authDomain: "pososhibase48.firebaseapp.com",
-        databaseURL: "https://pososhibase48-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "pososhibase48",
-        storageBucket: "pososhibase48.appspot.com",
-        messagingSenderId: "949946735395",
-        appId: "1:949946735395:web:a1c8b6fa6630780d964a96",
-        measurementId: "G-8276S165X1"
-      };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDdCF4P0eUaJp_l5EzGR_JAP2IPdzjJytY",
+            authDomain: "pososhibase48.firebaseapp.com",
+            databaseURL: "https://pososhibase48-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "pososhibase48",
+            storageBucket: "pososhibase48.appspot.com",
+            messagingSenderId: "949946735395",
+            appId: "1:949946735395:web:a1c8b6fa6630780d964a96",
+            measurementId: "G-8276S165X1"
+        };
 
-      firebase.initializeApp(firebaseConfig);
-      const database = firebase.database();
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
     </script>
 
-    <!-- Script utama -->
     <script src="script.js"></script>
     <script src="public/camera.js"></script>
 
