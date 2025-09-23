@@ -8,7 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="public/style.css">
     <link rel="icon" type="image/png" href="img/logo.svg" />
-    <!-- Tambahkan di head -->
+    
+    <!-- Library untuk scan barcode -->
     <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
 
     <!-- Firebase SDK -->
@@ -230,54 +231,54 @@
     </div>
 
     <!-- Checkout Modal -->
-<div id="checkout-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Pembayaran</h2>
-            <span class="close">&times;</span>
-        </div>
-        
-        <div class="modal-body">
-            <div class="payment-details">
-                <div class="summary-row">
-                    <span>Total Belanja</span>
-                    <span id="checkout-total">Rp 0</span>
-                </div>
-                
-                <!-- Tombol nominal uang -->
-                <div class="cash-buttons">
-                    <h3>Pilih Nominal:</h3>
-                    <div class="cash-buttons-grid">
-                        <button type="button" class="cash-btn" data-amount="10000">10.000</button>
-                        <button type="button" class="cash-btn" data-amount="20000">20.000</button>
-                        <button type="button" class="cash-btn" data-amount="50000">50.000</button>
-                        <button type="button" class="cash-btn" data-amount="100000">100.000</button>
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Pembayaran</h2>
+                <span class="close">&times;</span>
+            </div>
+            
+            <div class="modal-body">
+                <div class="payment-details">
+                    <div class="summary-row">
+                        <span>Total Belanja</span>
+                        <span id="checkout-total">Rp 0</span>
+                    </div>
+                    
+                    <!-- Tombol nominal uang -->
+                    <div class="cash-buttons">
+                        <h3>Pilih Nominal:</h3>
+                        <div class="cash-buttons-grid">
+                            <button type="button" class="cash-btn" data-amount="10000">10.000</button>
+                            <button type="button" class="cash-btn" data-amount="20000">20.000</button>
+                            <button type="button" class="cash-btn" data-amount="50000">50.000</button>
+                            <button type="button" class="cash-btn" data-amount="100000">100.000</button>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="cash-amount">Jumlah Uang</label>
+                        <input type="number" id="cash-amount" min="0" placeholder="Masukkan jumlah uang">
+                    </div>
+                    
+                    <div class="summary-row">
+                        <span>Kembalian</span>
+                        <span id="change-amount">Rp 0</span>
+                    </div>
+
+                    <!-- Pesan error jika uang kurang -->
+                    <div id="cash-error" class="error-message" style="display: none;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Jumlah uang tidak cukup!</span>
                     </div>
                 </div>
                 
-                <div class="input-group">
-                    <label for="cash-amount">Jumlah Uang</label>
-                    <input type="number" id="cash-amount" min="0" placeholder="Masukkan jumlah uang">
-                </div>
-                
-                <div class="summary-row">
-                    <span>Kembalian</span>
-                    <span id="change-amount">Rp 0</span>
-                </div>
-
-                <!-- Pesan error jika uang kurang -->
-                <div id="cash-error" class="error-message" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>Jumlah uang tidak cukup!</span>
-                </div>
+                <button class="btn-primary" id="confirm-payment">
+                    <i class="fas fa-receipt"></i> Cetak Struk
+                </button>
             </div>
-            
-            <button class="btn-primary" id="confirm-payment">
-                <i class="fas fa-receipt"></i> Cetak Struk
-            </button>
         </div>
     </div>
-</div>
     
     <!-- Notification Toast -->
     <div id="toast" class="toast">
