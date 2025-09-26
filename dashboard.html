@@ -143,39 +143,6 @@
             <div class="modal-body">
                 <div class="tabs">
                     <button class="tab-btn active" data-tab="products-list">Daftar Produk</button>
-<!-- Modal Edit Item -->
-<div id="edit-item-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Edit Jumlah Barang</h2>
-            <span class="close">&times;</span>
-        </div>
-        <div class="modal-body">
-            <form id="edit-item-form" class="edit-item-form">
-                <input type="hidden" id="edit-product-id">
-                <div class="form-group">
-                    <label for="edit-product-name">Nama Produk:</label>
-                    <input type="text" id="edit-product-name" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="edit-product-price">Harga Satuan:</label>
-                    <input type="text" id="edit-product-price" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="edit-product-quantity">Jumlah:</label>
-                    <input type="number" id="edit-product-quantity" min="1" value="1">
-                    <small>Stok tersedia: <span id="edit-product-max-stock">0</span></small>
-                </div>
-            </form>
-        </div>
-        <div class="modal-footer">
-            <div class="edit-actions">
-                <button id="cancel-edit">Batal</button>
-                <button id="save-edit">Simpan Perubahan</button>
-            </div>
-        </div>
-    </div>
-</div>
                     <button class="tab-btn" data-tab="add-product">Tambah Produk</button>
                 </div>
                 
@@ -216,6 +183,60 @@
                             <i class="fas fa-plus"></i> Tambah Produk
                         </button>
                     </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Item - Dipindahkan ke luar modal produk -->
+    <div id="edit-item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Jumlah Barang</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="edit-item-form" class="edit-item-form">
+                    <input type="hidden" id="edit-product-id">
+                    <div class="form-group">
+                        <label for="edit-product-name">Nama Produk:</label>
+                        <input type="text" id="edit-product-name" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-product-price">Harga Satuan:</label>
+                        <input type="text" id="edit-product-price" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-product-quantity">Jumlah:</label>
+                        <input type="number" id="edit-product-quantity" min="1" value="1">
+                        <small>Stok tersedia: <span id="edit-product-max-stock">0</span></small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <div class="edit-actions">
+                    <button id="cancel-edit">Batal</button>
+                    <button id="save-edit">Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus Produk (Baru) -->
+    <div id="delete-product-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Konfirmasi Hapus Produk</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus produk <strong id="delete-product-name"></strong>?</p>
+                <p>Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="modal-footer">
+                <div class="delete-actions">
+                    <button id="cancel-delete" class="btn-secondary">Batal</button>
+                    <button id="confirm-delete" class="btn-danger">Hapus Produk</button>
                 </div>
             </div>
         </div>
